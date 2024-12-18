@@ -2,7 +2,7 @@ import telebot
 from config import botkey
 bot = telebot.TeleBot(botkey)
 
-@bot.message.handler(commands=['start'])
+@bot.message_handler(commands=['start'])
 def handle_message(message):
   bot.send_message(message.chat.id, 'Hi!')
 
