@@ -1,0 +1,1 @@
+botkey = '7938252485:AAGs5cP6Ok7hPue2bWmJUa1kHDPmqz-SZXo'
