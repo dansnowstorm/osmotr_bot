@@ -10,4 +10,3 @@ def handle_message(message):
 def handler_message(message):
   bot.send_message(message.chat.id, 'Test - BOT!')
 bot.polling()
-  
