@@ -1,7 +1,337 @@
-<html>
-<head><meta charset="utf-8" /></head>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Интерактивная карта</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+    html, body {
+        margin: 0;
+        height: 100%;
+        background: #1e1e1e;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    header {
+        background: #242424;
+        padding: 10px 15px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        border-bottom: 1px solid #444;
+    }
+
+    select {
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+        padding: 6px;
+        font-size: 16px;
+        border-radius: 6px;
+    }
+
+    #fullscreenBtn {
+        padding: 6px 12px;
+        background: #3d3d3d;
+        border: 1px solid #555;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #fff;
+    }
+
+    #map {
+        width: 100%;
+        height: calc(100vh - 55px);
+    }
+
+    /* Popup карточка */
+    #popup {
+        position: absolute;
+        background: #2a2a2a;
+        padding: 10px;
+        border-radius: 8px;
+        color: #fff;
+        display: none;
+        pointer-events: none;
+        font-size: 14px;
+        border: 1px solid #444;
+        z-index: 1000;
+    }
+</style>
+</head>
+
 <body>
-    <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.2.0.min.js" integrity="sha256-iZ2u/oU2wf/vDbl/ChcX93WgbBRSBvUO6N413hDz7xM=" crossorigin="anonymous"></script>                <div id="9aba611d-8d98-4d05-9896-d37bccaaa587" class="plotly-graph-div" style="height:600px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("9aba611d-8d98-4d05-9896-d37bccaaa587")) {                    Plotly.newPlot(                        "9aba611d-8d98-4d05-9896-d37bccaaa587",                        [{"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003e\u0428\u0438\u0440\u043e\u0442\u0430=%{lat}\u003cbr\u003e\u0414\u043e\u043b\u0433\u043e\u0442\u0430=%{lon}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211610\n\u0412 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0438\u0439 \u043c\u043e\u043c\u0435\u043d\u0442 \u043f\u0440\u043e\u0432\u043e\u0434\u0438\u0442\u0441\u044f \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e \u0434\u0435\u0442\u0441\u043a\u043e\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438 \u0441 \u0437\u0430\u043c\u0435\u043d\u043e\u0439 \u0438\u0433\u0440\u043e\u0432\u043e\u0433\u043e \u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u044f","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21161 \u0410\u043c\u0443\u0440\u0441\u043a\u0438\u0439 \u0442\u0438\u0433\u0440","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21162","\u0414\u0435\u0442\u0441\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163 \u041a\u0438\u0442\u0430\u0439\u0441\u043a\u0438\u0439 \u0433\u043e\u0440\u043e\u0434\u043e\u043a","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165 \u041f\u0430\u043d\u0434\u0430","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u2116 1 \u0410\u043a\u0443\u043b\u0430","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163 \u041c\u0430\u043c\u043e\u043d\u0442","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165 ","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166 \u041a\u043e\u0441\u043c\u043e\u0441","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21167 \u041a\u043e\u0441\u043c\u043e\u0441 2","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21168","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21169","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211610","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211611","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211612","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211613","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u2116 1 \u0417\u0430\u043c\u043e\u043a","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21161","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21169","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21167","\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21168"],"lat":{"dtype":"f8","bdata":"pu1fWWnOS0DhDWlU4M5LQKt4I\u002fPIzUtAnbzIBPzQS0AT1sbYCdFLQN8ZbVUS0UtAj3IwmwDRS0Cp+wCkNtFLQC7lfLH30EtAnkXvVMDPS0D\u002f6Js0DdBLQL+4VKUt0EtAoPzdO2rQS0Bp\u002fMIrSdBLQGn8witJ0EtAlpLlJJTQS0CkNJvHYdBLQMx8Bz9x0EtAzHwHP3HQS0BiaHVyhtBLQJd1\u002f1iI0EtAN+DzwwjRS0DwbmWJzsxLQKqAe54\u002fy0tAGt6swfvMS0CeeqTBbctLQLuZ0Y+Gy0tAJ77aUZzLS0BoP1JEhstLQFbysbtAy0tA"},"legendgroup":"","lon":{"dtype":"f8","bdata":"umjIeJTWQkCLNVzknthCQMZOeAlO10JAO\u002f2gLlLaQkDhCFIpdtpCQLMmFviK2kJAHozYJ4DaQkAq\u002fu+ICttCQE6c3O9Q3EJAfGXequvYQkA2donqrdlCQIOmJVZG2UJAgc6kTdXZQkD8Uj9vKtpCQPxSP28q2kJAHGFREafbQkB1jgHZ69tCQPbP04BB3EJA9s\u002fTgEHcQkAsD9JT5NpCQHI2HQHc2kJApMLYQpDZQkBAFw0Zj9pCQA2l9iLa1kJAYwys4\u002fjVQkC3tYXnpdZCQJ\u002fNqs\u002fV1kJA+Z0mM97WQkBLrfcb7dZCQFbzHJHv1kJA"},"marker":{"color":"#636efa"},"mode":"markers","name":"","showlegend":false,"subplot":"mapbox","type":"scattermapbox"},{"lat":[55.61259],"lon":[37.676406],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.616221],"lon":[37.692349],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211610\n\u0412 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0438\u0439 \u043c\u043e\u043c\u0435\u043d\u0442 \u043f\u0440\u043e\u0432\u043e\u0434\u0438\u0442\u0441\u044f \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e \u0434\u0435\u0442\u0441\u043a\u043e\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438 \u0441 \u0437\u0430\u043c\u0435\u043d\u043e\u0439 \u0438\u0433\u0440\u043e\u0432\u043e\u0433\u043e \u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u044f","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211610\n\u0412 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0438\u0439 \u043c\u043e\u043c\u0435\u043d\u0442 \u043f\u0440\u043e\u0432\u043e\u0434\u0438\u0442\u0441\u044f \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e \u0434\u0435\u0442\u0441\u043a\u043e\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438 \u0441 \u0437\u0430\u043c\u0435\u043d\u043e\u0439 \u0438\u0433\u0440\u043e\u0432\u043e\u0433\u043e \u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u044f"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.607695],"lon":[37.682069],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.632691],"lon":[37.705633],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21161 \u0410\u043c\u0443\u0440\u0441\u043a\u0438\u0439 \u0442\u0438\u0433\u0440","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21161 \u0410\u043c\u0443\u0440\u0441\u043a\u0438\u0439 \u0442\u0438\u0433\u0440"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.633113],"lon":[37.706731],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21162","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21162"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.633372],"lon":[37.707366],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163 \u041a\u0438\u0442\u0430\u0439\u0441\u043a\u0438\u0439 \u0433\u043e\u0440\u043e\u0434\u043e\u043a","text":["\u0414\u0435\u0442\u0441\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163 \u041a\u0438\u0442\u0430\u0439\u0441\u043a\u0438\u0439 \u0433\u043e\u0440\u043e\u0434\u043e\u043a"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.632831],"lon":[37.707036],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.63448],"lon":[37.711259],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165 \u041f\u0430\u043d\u0434\u0430","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165 \u041f\u0430\u043d\u0434\u0430"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.632559],"lon":[37.72122],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.623057],"lon":[37.694692],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u2116 1 \u0410\u043a\u0443\u043b\u0430","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u2116 1 \u0410\u043a\u0443\u043b\u0430"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.625403],"lon":[37.70062],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163 \u041c\u0430\u043c\u043e\u043d\u0442","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163 \u041c\u0430\u043c\u043e\u043d\u0442"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.626393],"lon":[37.697459],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.628242],"lon":[37.701822],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165 ","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165 "],"textposition":"top right","type":"scattermapbox"},{"lat":[55.627233],"lon":[37.70442],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166 \u041a\u043e\u0441\u043c\u043e\u0441","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166 \u041a\u043e\u0441\u043c\u043e\u0441"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.627233],"lon":[37.70442],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21167 \u041a\u043e\u0441\u043c\u043e\u0441 2","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21167 \u041a\u043e\u0441\u043c\u043e\u0441 2"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.629521],"lon":[37.716036],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21168","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21168"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.627984],"lon":[37.718135],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21169","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21169"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.628456],"lon":[37.720749],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211610","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211610"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.628456],"lon":[37.720749],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211611","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211611"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.629103],"lon":[37.710093],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211612","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211612"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.629161],"lon":[37.709839],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211613","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u211613"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.63308],"lon":[37.699715],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u2116 1 \u0417\u0430\u043c\u043e\u043a","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u2116 1 \u0417\u0430\u043c\u043e\u043a"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.600053],"lon":[37.707492],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21161","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21161"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.587879],"lon":[37.678532],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21169","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21169"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.601433],"lon":[37.671658],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21163"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.589287],"lon":[37.676938],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21164"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.590044],"lon":[37.6784],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21165"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.590708],"lon":[37.678656],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21166"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.590035],"lon":[37.679111],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21167","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21167"],"textposition":"top right","type":"scattermapbox"},{"lat":[55.587913],"lon":[37.679186],"marker":{"color":"red","size":10},"mode":"markers+text","name":"\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21168","text":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u21168"],"textposition":"top right","type":"scattermapbox"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"mapbox":{"domain":{"x":[0.0,1.0],"y":[0.0,1.0]},"center":{"lat":55.6178742,"lon":37.69862636666666},"zoom":10,"style":"open-street-map"},"legend":{"tracegroupgap":0},"margin":{"t":60},"height":600},                        {"responsive": true}                    )                };            </script>        </div>
+
+<header>
+    <label>Объект:</label>
+    <select id="pointSelector"></select>
+
+    <button id="fullscreenBtn">⛶ Полный экран</button>
+</header>
+
+<div id="popup"></div>
+<div id="map"></div>
+
+<script>
+// === ДАННЫЕ ПОДСТАВЛЯЮТСЯ PYTHON-СКРИПТОМ ===
+const points = [
+  {
+    "name": "Детская площадка №3",
+    "lat": 55.61259,
+    "lon": 37.676406,
+    "description": "Детская площадка №3"
+  },
+  {
+    "name": "Детская площадка №10",
+    "lat": 55.616221,
+    "lon": 37.692349,
+    "description": "Детская площадка №10\nВ настоящий момент проводится устройство детской площадки с заменой игрового оборудования"
+  },
+  {
+    "name": "Детская площадка №6",
+    "lat": 55.607695,
+    "lon": 37.682069,
+    "description": "Детская площадка №6"
+  },
+  {
+    "name": "Детская площадка №1 Амурский тигр",
+    "lat": 55.632691,
+    "lon": 37.705633,
+    "description": "Детская площадка №1 Амурский тигр"
+  },
+  {
+    "name": "Детская площадка №2",
+    "lat": 55.633113,
+    "lon": 37.706731,
+    "description": "Детская площадка №2"
+  },
+  {
+    "name": "Детсая площадка №3 Китайский городок",
+    "lat": 55.633372,
+    "lon": 37.707366,
+    "description": "Детсая площадка №3 Китайский городок"
+  },
+  {
+    "name": "Детская площадка №4",
+    "lat": 55.632831,
+    "lon": 37.707036,
+    "description": "Детская площадка №4"
+  },
+  {
+    "name": "Детская площадка №5 Панда",
+    "lat": 55.63448,
+    "lon": 37.711259,
+    "description": "Детская площадка №5 Панда"
+  },
+  {
+    "name": "Детская площадка №6",
+    "lat": 55.632559,
+    "lon": 37.72122,
+    "description": "Детская площадка №6"
+  },
+  {
+    "name": "Детская площадка № 1 Акула",
+    "lat": 55.623057,
+    "lon": 37.694692,
+    "description": "Детская площадка № 1 Акула"
+  },
+  {
+    "name": "Детская площадка №3 Мамонт",
+    "lat": 55.625403,
+    "lon": 37.70062,
+    "description": "Детская площадка №3 Мамонт"
+  },
+  {
+    "name": "Детская площадка №4",
+    "lat": 55.626393,
+    "lon": 37.697459,
+    "description": "Детская площадка №4"
+  },
+  {
+    "name": "Детская площадка №5 ",
+    "lat": 55.628242,
+    "lon": 37.701822,
+    "description": "Детская площадка №5 "
+  },
+  {
+    "name": "Детская площадка №6 Космос",
+    "lat": 55.627233,
+    "lon": 37.70442,
+    "description": "Детская площадка №6 Космос"
+  },
+  {
+    "name": "Детская площадка №7 Космос 2",
+    "lat": 55.627233,
+    "lon": 37.70442,
+    "description": "Детская площадка №7 Космос 2"
+  },
+  {
+    "name": "Детская площадка №8",
+    "lat": 55.629521,
+    "lon": 37.716036,
+    "description": "Детская площадка №8"
+  },
+  {
+    "name": "Детская площадка №9",
+    "lat": 55.627984,
+    "lon": 37.718135,
+    "description": "Детская площадка №9"
+  },
+  {
+    "name": "Детская площадка №10",
+    "lat": 55.628456,
+    "lon": 37.720749,
+    "description": "Детская площадка №10"
+  },
+  {
+    "name": "Детская площадка №11",
+    "lat": 55.628456,
+    "lon": 37.720749,
+    "description": "Детская площадка №11"
+  },
+  {
+    "name": "Детская площадка №12",
+    "lat": 55.629103,
+    "lon": 37.710093,
+    "description": "Детская площадка №12"
+  },
+  {
+    "name": "Детская площадка №13",
+    "lat": 55.629161,
+    "lon": 37.709839,
+    "description": "Детская площадка №13"
+  },
+  {
+    "name": "Детская площадка № 1 Замок",
+    "lat": 55.63308,
+    "lon": 37.699715,
+    "description": "Детская площадка № 1 Замок"
+  },
+  {
+    "name": "Детская площадка №1",
+    "lat": 55.600053,
+    "lon": 37.707492,
+    "description": "Детская площадка №1"
+  },
+  {
+    "name": "Детская площадка №9",
+    "lat": 55.587879,
+    "lon": 37.678532,
+    "description": "Детская площадка №9"
+  },
+  {
+    "name": "Детская площадка №3",
+    "lat": 55.601433,
+    "lon": 37.671658,
+    "description": "Детская площадка №3"
+  },
+  {
+    "name": "Детская площадка №4",
+    "lat": 55.589287,
+    "lon": 37.676938,
+    "description": "Детская площадка №4"
+  },
+  {
+    "name": "Детская площадка №5",
+    "lat": 55.590044,
+    "lon": 37.6784,
+    "description": "Детская площадка №5"
+  },
+  {
+    "name": "Детская площадка №6",
+    "lat": 55.590708,
+    "lon": 37.678656,
+    "description": "Детская площадка №6"
+  },
+  {
+    "name": "Детская площадка №7",
+    "lat": 55.590035,
+    "lon": 37.679111,
+    "description": "Детская площадка №7"
+  },
+  {
+    "name": "Детская площадка №8",
+    "lat": 55.587913,
+    "lon": 37.679186,
+    "description": "Детская площадка №8"
+  }
+];
+
+// === Заполняем список ===
+const selector = document.getElementById("pointSelector");
+points.forEach((p, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = p.name;
+    selector.appendChild(opt);
+});
+
+// === Создаём карту ===
+let figData = [{
+    type: "scattermapbox",
+    lat: points.map(p => p.lat),
+    lon: points.map(p => p.lon),
+    mode: "markers",
+    marker: { size: 13 },
+    text: points.map(p => p.name),
+    customdata: points.map(p => p.description || ""),
+    hoverinfo: "none"   // отключаем стандартный hover Plotly
+}];
+
+let figLayout = {
+    mapbox: {
+        style: "open-street-map",
+        center: { lat: points[0].lat, lon: points[0].lon },
+        zoom: 5
+    },
+    margin: { t: 0, b: 0, l: 0, r: 0 }
+};
+
+Plotly.newPlot("map", figData, figLayout);
+
+// === Popup ===
+const mapDiv = document.getElementById("map");
+const popup = document.getElementById("popup");
+
+mapDiv.onmousemove = function(e){
+    popup.style.left = e.clientX + 10 + "px";
+    popup.style.top  = e.clientY + 10 + "px";
+};
+
+mapDiv.on('plotly_hover', function(data){
+    const idx = data.points[0].pointIndex;
+    const p = points[idx];
+    popup.innerHTML = `<b>${p.name}</b><br>${p.description || ""}`;
+    popup.style.display = "block";
+});
+
+mapDiv.on('plotly_unhover', function(){
+    popup.style.display = "none";
+});
+
+// === Перемещение карты при выборе ===
+selector.addEventListener("change", (event) => {
+    const p = points[event.target.value];
+
+    Plotly.relayout("map", {
+        "mapbox.center": { lat: p.lat, lon: p.lon },
+        "mapbox.zoom": 8
+    });
+});
+
+// === FULLSCREEN ===
+document.getElementById("fullscreenBtn").onclick = function() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+};
+</script>
+
 </body>
 </html>
