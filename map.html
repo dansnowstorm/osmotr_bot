@@ -1,73 +1,80 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Интерактивная карта</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map (Plotly)</title>
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<style>
-    html, body {
-        margin: 0;
-        height: 100%;
-        background: #1e1e1e;
-        color: white;
-        font-family: Arial, sans-serif;
-    }
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    header {
-        background: #242424;
-        padding: 10px 15px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        border-bottom: 1px solid #444;
-    }
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
 
-    select {
-        background: #333;
-        color: white;
-        border: 1px solid #555;
-        padding: 6px;
-        font-size: 16px;
-        border-radius: 6px;
-    }
-
-    #map {
-        width: 100%;
-        height: calc(100vh - 55px);
-    }
-
-    /* Popup карточка */
-    #popup {
-        position: absolute;
-        background: #2a2a2a;
-        padding: 10px;
-        border-radius: 8px;
-        color: #fff;
-        display: none;
-        pointer-events: none;
-        font-size: 14px;
-        border: 1px solid #444;
-        z-index: 1000;
-    }
-</style>
+        /* Модальное окно */
+        #dialog {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            display: none;
+            width: calc(100% - 40px);
+        }
+        #dialog-text {
+            margin-bottom: 10px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            background: #2b8cff;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn.cancel {
+            background: #666;
+        }
+    </style>
 </head>
 
 <body>
 
-<header>
-    <label>Объект:</label>
-    <select id="pointSelector"></select>
-</header>
-
-<div id="popup"></div>
 <div id="map"></div>
 
+<div id="dialog">
+    <div id="dialog-text"></div>
+    <div class="buttons">
+        <div class="btn" id="btn-yes">Да</div>
+        <div class="btn cancel" id="btn-no">Нет</div>
+    </div>
+</div>
+
 <script>
-// === Точки подставляются Python-скриптом ===
-const points = [
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const points = [
   {
     "name": "ОТ ДП №3",
     "lat": 55.61259,
@@ -250,67 +257,70 @@ const points = [
   }
 ];
 
-// === Заполняем список ===
-const selector = document.getElementById("pointSelector");
-points.forEach((p, i) => {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = p.name;
-    selector.appendChild(opt);
-});
+    // ====== Рендер Plotly карты ======
+    const lat = points.map(p => p.lat);
+    const lon = points.map(p => p.lon);
+    const text = points.map(p => p.name);
 
-// === Создаём карту ===
-let figData = [{
-    type: "scattermapbox",
-    lat: points.map(p => p.lat),
-    lon: points.map(p => p.lon),
-    mode: "markers",
-    marker: { size: 13 },
-    text: points.map(p => p.name),
-    customdata: points.map(p => p.description || ""),
-    hoverinfo: "none"
-}];
+    const data = [{
+        type: "scattermapbox",
+        lat: lat,
+        lon: lon,
+        text: text,
+        mode: "markers",
+        marker: {
+            size: 14,
+            color: "red"
+        },
+        hoverinfo: "text"
+    }];
 
-let figLayout = {
-    mapbox: {
-        style: "open-street-map",
-        center: { lat: points[0].lat, lon: points[0].lon },
-        zoom: 14
-    },
-    margin: { t: 0, b: 0, l: 0, r: 0 }
-};
+    const layout = {
+        mapbox: {
+            style: "open-street-map",
+            center: {lat: lat[0], lon: lon[0]},
+            zoom: 10
+        },
+        margin: {t: 0, b: 0, l: 0, r: 0}
+    };
 
-Plotly.newPlot("map", figData, figLayout);
+    Plotly.newPlot("map", data, layout);
 
-// === Popup ===
-const mapDiv = document.getElementById("map");
-const popup = document.getElementById("popup");
+    // ====== Обработка клика по точке ======
+    const dialog = document.getElementById("dialog");
+    const dialogText = document.getElementById("dialog-text");
 
-mapDiv.onmousemove = function(e){
-    popup.style.left = e.clientX + 10 + "px";
-    popup.style.top  = e.clientY + 10 + "px";
-};
+    let selectedPoint = null;
 
-mapDiv.on('plotly_hover', function(data){
-    const idx = data.points[0].pointIndex;
-    const p = points[idx];
-    popup.innerHTML = `<b>${p.name}</b><br>${p.description || ""}`;
-    popup.style.display = "block";
-});
+    const mapDiv = document.getElementById("map");
+    mapDiv.on("plotly_click", function(e){
+        const idx = e.points[0].pointIndex;
+        selectedPoint = points[idx];
 
-mapDiv.on('plotly_unhover', function(){
-    popup.style.display = "none";
-});
+        Plotly.relayout("map", {
+            "mapbox.center": {lat: selectedPoint.lat, lon: selectedPoint.lon},
+            "mapbox.zoom": 14
+        });
 
-// === Перемещение карты при выборе объекта ===
-selector.addEventListener("change", (event) => {
-    const p = points[event.target.value];
-
-    Plotly.relayout("map", {
-        "mapbox.center": { lat: p.lat, lon: p.lon },
-        "mapbox.zoom": 16
+        dialogText.textContent = `Точка: ${selectedPoint.name}.  Сделать фотографии?`;
+        dialog.style.display = "block";
     });
-});
+
+    // ====== Кнопки ======
+    document.getElementById("btn-yes").onclick = () => {
+        if (!selectedPoint) return;
+
+        tg.sendData(JSON.stringify({
+            action: "start_photos",
+            point: selectedPoint.name
+        }));
+
+        tg.close();
+    };
+
+    document.getElementById("btn-no").onclick = () => {
+        dialog.style.display = "none";
+    };
 </script>
 
 </body>
