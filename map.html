@@ -34,15 +34,6 @@
         border-radius: 6px;
     }
 
-    #fullscreenBtn {
-        padding: 6px 12px;
-        background: #3d3d3d;
-        border: 1px solid #555;
-        border-radius: 6px;
-        cursor: pointer;
-        color: #fff;
-    }
-
     #map {
         width: 100%;
         height: calc(100vh - 55px);
@@ -69,15 +60,13 @@
 <header>
     <label>Объект:</label>
     <select id="pointSelector"></select>
-
-    <button id="fullscreenBtn">⛶ Полный экран</button>
 </header>
 
 <div id="popup"></div>
 <div id="map"></div>
 
 <script>
-// === ДАННЫЕ ПОДСТАВЛЯЮТСЯ PYTHON-СКРИПТОМ ===
+// === Точки подставляются Python-скриптом ===
 const points = [
   {
     "name": "Детская площадка №3",
@@ -279,14 +268,14 @@ let figData = [{
     marker: { size: 13 },
     text: points.map(p => p.name),
     customdata: points.map(p => p.description || ""),
-    hoverinfo: "none"   // отключаем стандартный hover Plotly
+    hoverinfo: "none"
 }];
 
 let figLayout = {
     mapbox: {
         style: "open-street-map",
         center: { lat: points[0].lat, lon: points[0].lon },
-        zoom: 5
+        zoom: 14
     },
     margin: { t: 0, b: 0, l: 0, r: 0 }
 };
@@ -313,24 +302,15 @@ mapDiv.on('plotly_unhover', function(){
     popup.style.display = "none";
 });
 
-// === Перемещение карты при выборе ===
+// === Перемещение карты при выборе объекта ===
 selector.addEventListener("change", (event) => {
     const p = points[event.target.value];
 
     Plotly.relayout("map", {
         "mapbox.center": { lat: p.lat, lon: p.lon },
-        "mapbox.zoom": 8
+        "mapbox.zoom": 16
     });
 });
-
-// === FULLSCREEN ===
-document.getElementById("fullscreenBtn").onclick = function() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-    } else {
-        document.exitFullscreen();
-    }
-};
 </script>
 
 </body>
