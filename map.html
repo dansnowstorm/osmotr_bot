@@ -6,8 +6,6 @@
     <title>Map (Plotly)</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- Plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
@@ -23,13 +21,13 @@
             height: 100%;
         }
 
-        /* Модальное окно */
+        /* диалог */
         #dialog {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: white;
+            background: #ffffff;
             padding: 14px 18px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
@@ -71,8 +69,9 @@
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram?.WebApp || null;
+
+    if (tg) tg.expand();
 
     const points = [
   {
@@ -257,7 +256,10 @@
   }
 ];
 
-    // ====== Рендер Plotly карты ======
+    if (!points || points.length === 0) {
+        alert("Нет данных для отображения карты");
+    }
+
     const lat = points.map(p => p.lat);
     const lon = points.map(p => p.lon);
     const text = points.map(p => p.name);
@@ -268,54 +270,51 @@
         lon: lon,
         text: text,
         mode: "markers",
-        marker: {
-            size: 14,
-            color: "red"
-        },
+        marker: { size: 14 },
         hoverinfo: "text"
     }];
 
     const layout = {
         mapbox: {
             style: "open-street-map",
-            center: {lat: lat[0], lon: lon[0]},
+            center: { lat: lat[0], lon: lon[0] },
             zoom: 10
         },
-        margin: {t: 0, b: 0, l: 0, r: 0}
+        margin: { t: 0, b: 0, l: 0, r: 0 }
     };
 
     Plotly.newPlot("map", data, layout);
 
-    // ====== Обработка клика по точке ======
+    let selectedPoint = null;
+
     const dialog = document.getElementById("dialog");
     const dialogText = document.getElementById("dialog-text");
 
-    let selectedPoint = null;
-
     const mapDiv = document.getElementById("map");
+
     mapDiv.on("plotly_click", function(e){
         const idx = e.points[0].pointIndex;
         selectedPoint = points[idx];
 
         Plotly.relayout("map", {
-            "mapbox.center": {lat: selectedPoint.lat, lon: selectedPoint.lon},
+            "mapbox.center": { lat: selectedPoint.lat, lon: selectedPoint.lon },
             "mapbox.zoom": 14
         });
 
-        dialogText.textContent = `Точка: ${selectedPoint.name}.  Сделать фотографии?`;
+        dialogText.textContent = `Точка: ${selectedPoint.name}. Сделать фотографии?`;
         dialog.style.display = "block";
     });
 
-    // ====== Кнопки ======
     document.getElementById("btn-yes").onclick = () => {
         if (!selectedPoint) return;
 
-        tg.sendData(JSON.stringify({
-            action: "start_photos",
-            point: selectedPoint.name
-        }));
-
-        tg.close();
+        if (tg) {
+            tg.sendData(JSON.stringify({
+                action: "start_photos",
+                point: selectedPoint.name
+            }));
+            tg.close();
+        }
     };
 
     document.getElementById("btn-no").onclick = () => {
