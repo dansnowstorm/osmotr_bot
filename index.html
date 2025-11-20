@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map (Plotly)</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: sans-serif;
+            background: #111;
+            color: #fff;
+        }
+        #map { width: 100%; height: 100%; }
+
+        /* диалог */
+        #dialog {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #000;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            display: none;
+            width: calc(100% - 40px);
+            max-width: 720px;
+        }
+        #dialog-text { margin-bottom: 10px; }
+        .buttons { display: flex; gap: 10px; }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            background: #2b8cff;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn.cancel { background: #666; }
+        /* уведомление */
+        .note {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(43,140,255,0.95);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<div id="dialog">
+    <div id="dialog-text"></div>
+    <div class="buttons">
+        <div class="btn" id="btn-yes">Да</div>
+        <div class="btn cancel" id="btn-no">Нет</div>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram?.WebApp || null;
+    if (tg) tg.expand();
+
+    // === данные подставляет generate_map.py ===
+    const points = {[{"name": "ОТ ДП №3", "lat": 55.61259, "lon": 37.676406, "description": "Детская площадка №3"}, {"name": "ОТ ДП №10 Ремонт", "lat": 55.616221, "lon": 37.692349, "description": "Детская площадка №10\nВ настоящий момент проводится устройство детской площадки с заменой игрового оборудования"}, {"name": "ОТ ДП №6", "lat": 55.607695, "lon": 37.682069, "description": "Детская площадка №6"}, {"name": "ЗО БП ДП №1", "lat": 55.632691, "lon": 37.705633, "description": "Детская площадка №1 Амурский тигр"}, {"name": "ЗО БП ДП №2", "lat": 55.633113, "lon": 37.706731, "description": "Детская площадка №2"}, {"name": "ЗО БП ДП №3", "lat": 55.633372, "lon": 37.707366, "description": "Детсая площадка №3 Китайский городок"}, {"name": "ЗО БП ДП №4", "lat": 55.632831, "lon": 37.707036, "description": "Детская площадка №4"}, {"name": "ЗО БП ДП №5", "lat": 55.63448, "lon": 37.711259, "description": "Детская площадка №5 Панда"}, {"name": "ЗО БП ДП №6", "lat": 55.632559, "lon": 37.72122, "description": "Детская площадка №6"}, {"name": "ЗО БП ДП № 1", "lat": 55.623057, "lon": 37.694692, "description": "Детская площадка № 1 Акула"}, {"name": "ЗО БП ДП №3", "lat": 55.625403, "lon": 37.70062, "description": "Детская площадка №3 Мамонт"}, {"name": "ЗО БП ДП №4", "lat": 55.626393, "lon": 37.697459, "description": "Детская площадка №4"}, {"name": "Парк БП ДП №5", "lat": 55.628242, "lon": 37.701822, "description": "Детская площадка №5 "}, {"name": "Парк БП ДП №6", "lat": 55.627233, "lon": 37.70442, "description": "Детская площадка №6 Космос"}, {"name": "Парк БП ДП №7", "lat": 55.627233, "lon": 37.70442, "description": "Детская площадка №7 Космос 2"}, {"name": "Парк БП ДП №8", "lat": 55.629521, "lon": 37.716036, "description": "Детская площадка №8"}, {"name": "Парк БП ДП №9", "lat": 55.627984, "lon": 37.718135, "description": "Детская площадка №9"}, {"name": "Парк БП ДП №10", "lat": 55.628456, "lon": 37.720749, "description": "Детская площадка №10"}, {"name": "Парк БП ДП №11", "lat": 55.628456, "lon": 37.720749, "description": "Детская площадка №11"}, {"name": "Парк БП ДП №12", "lat": 55.629103, "lon": 37.710093, "description": "Детская площадка №12"}, {"name": "Парк БП ДП №13", "lat": 55.629161, "lon": 37.709839, "description": "Детская площадка №13"}, {"name": "Парк БП ДП № 1", "lat": 55.63308, "lon": 37.699715, "description": "Детская площадка № 1 Замок"}, {"name": "БД ДП №1", "lat": 55.600053, "lon": 37.707492, "description": "Детская площадка №1"}, {"name": "БД ДП №9", "lat": 55.587879, "lon": 37.678532, "description": "Детская площадка №9"}, {"name": "БД ДП №3", "lat": 55.601433, "lon": 37.671658, "description": "Детская площадка №3"}, {"name": "БД ДП №4", "lat": 55.589287, "lon": 37.676938, "description": "Детская площадка №4"}, {"name": "БД ДП №5", "lat": 55.590044, "lon": 37.6784, "description": "Детская площадка №5"}, {"name": "БД ДП №6", "lat": 55.590708, "lon": 37.678656, "description": "Детская площадка №6"}, {"name": "БД ДП №7", "lat": 55.590035, "lon": 37.679111, "description": "Детская площадка №7"}, {"name": "БД ДП №8", "lat": 55.587913, "lon": 37.679186, "description": "Детская площадка №8"}]};
+
+    if (!points || !Array.isArray(points) || points.length === 0) {
+        document.body.innerHTML = "<div style='padding:20px;color:white;'>Нет точек для отображения.</div>";
+        throw new Error("No points");
+    }
+
+    const lat = points.map(p => p.lat);
+    const lon = points.map(p => p.lon);
+    const text = points.map(p => p.name);
+
+    const data = [{
+        type: "scattermapbox",
+        lat: lat,
+        lon: lon,
+        text: text,
+        mode: "markers",
+        marker: { size: 14 },
+        hoverinfo: "text",
+    }];
+
+    const layout = {
+        mapbox: {
+            style: "open-street-map",
+            center: { lat: lat[0], lon: lon[0] },
+            zoom: 12
+        },
+        margin: { t: 0, b: 0, l: 0, r: 0 }
+    };
+
+    Plotly.newPlot("map", data, layout);
+
+    const dialog = document.getElementById("dialog");
+    const dialogText = document.getElementById("dialog-text");
+    let selectedPoint = null;
+    const mapDiv = document.getElementById("map");
+
+    // Обработка клика по точке — после newPlot
+    mapDiv.on('plotly_click', function(e){
+        const idx = e.points[0].pointIndex;
+        selectedPoint = points[idx];
+
+        Plotly.relayout("map", {
+            "mapbox.center": { lat: selectedPoint.lat, lon: selectedPoint.lon },
+            "mapbox.zoom": 15
+        });
+
+        dialogText.textContent = `Точка: ${selectedPoint.name}. Сделать фотографии?`;
+        dialog.style.display = "block";
+    });
+
+    // Кнопка Да — предупреждение + отправка
+    document.getElementById("btn-yes").onclick = () => {
+        if (!selectedPoint) return;
+
+        // показаем уведомление с именем точки
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.innerText = `Режим фото для точки "${selectedPoint.name}" включён`;
+        document.body.appendChild(note);
+
+        setTimeout(() => {
+            note.remove();
+
+            if (tg) {
+                // отправляем компактный JSON с action и name точки
+                tg.sendData(JSON.stringify({
+                    action: "start_photos",
+                    point: selectedPoint.name
+                }));
+                // закрываем WebApp — Telegram сразу доставит web_app_data боту
+                tg.close();
+            } else {
+                alert('tg not available — тест локально');
+            }
+        }, 1400);
+    };
+
+    document.getElementById("btn-no").onclick = () => {
+        dialog.style.display = "none";
+    };
+</script>
+</body>
+</html>
