@@ -152,7 +152,7 @@
                     point: selectedPoint.name
                 }));
                 // закрываем WebApp — Telegram сразу доставит web_app_data боту
-                tg.close();
+                setTimeout(() => tg.close(), 60);
             } else {
                 alert('tg not available — тест локально');
             }
