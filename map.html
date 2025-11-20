@@ -147,7 +147,7 @@
 
             if (tg) {
                 // отправляем компактный JSON с action и name точки
-                tg.WebApp.sendData(JSON.stringify({
+                tg.sendData(JSON.stringify({
                     action: "start_photos",
                     point: selectedPoint.name
                 }));
