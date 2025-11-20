@@ -119,17 +119,19 @@
     const mapDiv = document.getElementById("map");
 
     // Обработка клика по точке — после newPlot
-    mapDiv.on('plotly_click', function(e){
-        const idx = e.points[0].pointIndex;
-        selectedPoint = points[idx];
+    Plotly.newPlot("map", data, layout).then(gd => {
+        gd.on('plotly_click', function(e){
+            const idx = e.points[0].pointIndex;
+            selectedPoint = points[idx];
 
-        Plotly.relayout("map", {
-            "mapbox.center": { lat: selectedPoint.lat, lon: selectedPoint.lon },
-            "mapbox.zoom": 15
+            Plotly.relayout(gd, {
+                "mapbox.center": { lat: selectedPoint.lat, lon: selectedPoint.lon },
+                "mapbox.zoom": 15
+            });
+
+            dialogText.textContent = `Точка: ${selectedPoint.name}. Сделать фотографии?`;
+            dialog.style.display = "block";
         });
-
-        dialogText.textContent = `Точка: ${selectedPoint.name}. Сделать фотографии?`;
-        dialog.style.display = "block";
     });
 
     // Кнопка Да — предупреждение + отправка
