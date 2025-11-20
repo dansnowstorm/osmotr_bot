@@ -77,7 +77,7 @@
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp || null;
+    const tg = window.Telegram?.WebApp || null;
     if (tg) tg.expand();
 
     // === данные подставляет generate_map.py ===
