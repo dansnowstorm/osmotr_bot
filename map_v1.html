@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+        #map { width:100%; height:100%; }
+        #dialog {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 10px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+            display: none;
+        }
+        .btn { padding: 10px; margin-top: 10px; background:#2b8cff; color:white;
+               border-radius:8px; text-align:center; cursor:pointer; }
+        .cancel { background:#666; }
+    </style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div id="dialog">
+    <div id="dialog-text"></div>
+    <div class="btn" id="yes">Да</div>
+    <div class="btn cancel" id="no">Нет</div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// точки — пример
+const points = [
+    { name: "Точка 1", lat: 55.6, lon: 37.6 },
+    { name: "Точка 2", lat: 55.61, lon: 37.61 }
+];
+
+let selected = null;
+
+// Plotly карта
+Plotly.newPlot("map", [{
+    type: "scattermapbox",
+    lat: points.map(p => p.lat),
+    lon: points.map(p => p.lon),
+    text: points.map(p => p.name),
+    mode: "markers",
+    marker: { size: 14 }
+}], {
+    mapbox: {
+        style: "open-street-map",
+        center: { lat: points[0].lat, lon: points[0].lon },
+        zoom: 12
+    },
+    margin: { t:0, b:0, l:0, r:0 }
+}).then(gd => {
+
+    gd.on("plotly_click", e => {
+        const i = e.points[0].pointIndex;
+        selected = points[i];
+
+        document.getElementById("dialog-text").textContent =
+            `Вы выбрали: ${selected.name}. Сделать фото?`;
+        document.getElementById("dialog").style.display = "block";
+    });
+});
+
+document.getElementById("yes").onclick = function() {
+    tg.sendData(JSON.stringify({
+        action: "start_photos",
+        point: selected.name
+    }));
+
+    setTimeout(() => tg.close(), 80);
+};
+
+document.getElementById("no").onclick = function() {
+    document.getElementById("dialog").style.display = "none";
+};
+</script>
+
+</body>
+</html>
