@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html>
-<body>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<button onclick="send()">SEND</button>
+<button onclick="send()">sendData()</button>
 
 <script>
+const tg = window.Telegram.WebApp;
+
 function send() {
-    const tg = window.Telegram.WebApp;
-    tg.sendData(JSON.stringify({
-        action: "start_photos",
-        point: "Тестовая точка"
-    }));
-    tg.close();
+    tg.sendData(JSON.stringify({test: 123}));
 }
 </script>
-</body>
-</html>
