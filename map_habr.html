@@ -65,13 +65,15 @@
 <script>
     const form = document.getElementById("dataForm");
     const actionBtn = document.getElementById("actionBtn");
-
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    
     actionBtn.addEventListener("click", () => {
       form.style.display = "flex";
       actionBtn.style.display = "none";
     });
 
-    form.addEventListener("submit", (e) => {
+    dataForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
       const name = document.getElementById("nameInput").value.trim();
@@ -89,4 +91,3 @@
 </script>
 </body>
 </html>
-
