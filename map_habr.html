@@ -66,12 +66,12 @@
     const form = document.getElementById("dataForm");
     const actionBtn = document.getElementById("actionBtn");
 
-    actionBtn.addEventListener("click", () =&gt; {
+    actionBtn.addEventListener("click", () => {
       form.style.display = "flex";
       actionBtn.style.display = "none";
     });
 
-    form.addEventListener("submit", (e) =&gt; {
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
 
       const name = document.getElementById("nameInput").value.trim();
@@ -89,3 +89,4 @@
 </script>
 </body>
 </html>
+
